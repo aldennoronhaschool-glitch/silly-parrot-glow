@@ -28,8 +28,8 @@ const predefinedItems: Item[] = [
   { id: '3', name: 'Chicken Momos', },
   { id: '4', name: 'Meat Cutlet (2)',  },
   { id: '5', name: 'Meat Masala',  },
-  { id: '6', name: '', price: 8.00 },
-  { id: '7', name: 'Water Bottle', price: 1.50 },
+  { id: '6', name: 'Chicken Tikka', },
+  { id: '7', name: '', price: 1.50 },
   { id: '8', name: 'Pastry', price: 4.00 },
 ];
 
