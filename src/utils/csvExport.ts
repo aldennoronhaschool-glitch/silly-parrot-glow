@@ -18,25 +18,26 @@ export const exportSalesToCsv = (sales: SaleRecord[], filename: string = 'sales_
     return;
   }
 
-  // Define CSV headers without price or total columns
+  // Define CSV headers
   const headers = [
     "Sale ID",
     "Timestamp",
-    "Product Name",
-    "Quantity",
+    "Items Sold", // Consolidated column for all items
   ];
 
-  // Map sales data to CSV rows, excluding price and total
-  const rows = sales.flatMap(sale => {
-    return sale.items.map((item) => {
-      const row = [
-        `"${sale.id}"`, // Quote to handle commas in ID if any
-        `"${sale.timestamp}"`,
-        `"${item.name.replace(/"/g, '""')}"`, // Handle quotes in product names
-        item.quantity,
-      ];
-      return row.join(',');
-    });
+  // Map sales data to CSV rows, consolidating items for each sale
+  const rows = sales.map(sale => {
+    // Format items into a single string: "Item Name (xQuantity), Another Item (xQuantity)"
+    const itemsSoldString = sale.items.map(item =>
+      `${item.name} (x${item.quantity})`
+    ).join('; '); // Using semicolon to avoid conflict with potential commas in item names/quantities
+
+    const row = [
+      `"${sale.id}"`, // Quote to handle commas in ID if any
+      `"${sale.timestamp}"`,
+      `"${itemsSoldString.replace(/"/g, '""')}"`, // Handle quotes within the items string
+    ];
+    return row.join(',');
   });
 
   const csvContent = [
