@@ -24,10 +24,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isSelected
       onClick={() => onSelect(product.id)}
     >
       <CardHeader>
-        <CardTitle className="text-lg">{product.name}</CardTitle>
+        <CardTitle className="text-lg text-center">{product.name}</CardTitle> {/* Centered text */}
       </CardHeader>
-      <CardContent>
-        <p className="text-xl font-semibold">${product.price.toFixed(2)}</p>
+      {/* Price removed from CardContent */}
+      <CardContent className="flex items-center justify-center h-12">
+         {/* No content needed here as price is removed */}
       </CardContent>
     </Card>
   );

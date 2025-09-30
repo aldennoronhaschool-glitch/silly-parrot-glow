@@ -5,16 +5,12 @@ interface Product {
 }
 
 export const mockProducts: Product[] = [
-  { id: 'prod-001', name: 'Coffee (Small)', price: 2.50 },
-  { id: 'prod-002', name: 'Coffee (Medium)', price: 3.00 },
-  { id: 'prod-003', name: 'Coffee (Large)', price: 3.50 },
-  { id: 'prod-004', name: 'Espresso', price: 2.00 },
-  { id: 'prod-005', name: 'Latte', price: 4.00 },
-  { id: 'prod-006', name: 'Cappuccino', price: 4.00 },
-  { id: 'prod-007', name: 'Croissant', price: 3.00 },
-  { id: 'prod-008', name: 'Muffin', price: 2.75 },
-  { id: 'prod-009', name: 'Sandwich', price: 6.50 },
-  { id: 'prod-010', name: 'Water Bottle', price: 1.50 },
-  { id: 'prod-011', name: 'Juice', price: 2.25 },
-  { id: 'prod-012', name: 'Pastry', price: 3.20 },
+  { id: 'prod-001', name: 'Cheese Balls', price: 5.00 },
+  { id: 'prod-002', name: 'Chicken Nuggets', price: 7.50 },
+  { id: 'prod-003', name: 'Chicken Momos', price: 6.00 },
+  { id: 'prod-004', name: 'Meat Cutlet (2)', price: 8.00 },
+  { id: 'prod-005', name: 'Meat Masala', price: 10.00 },
+  { id: 'prod-006', name: 'Chicken Tikka', price: 12.00 },
+  { id: 'prod-007', name: 'Chicken Kabab', price: 11.50 },
+  { id: 'prod-008', name: 'French Fries', price: 4.00 },
 ];
