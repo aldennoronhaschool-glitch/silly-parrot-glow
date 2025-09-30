@@ -24,18 +24,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isSelected
       }`}
       onClick={() => onSelect(product.id)}
     >
-      <CardContent className="flex flex-col items-center justify-center p-2 text-center h-full"> {/* Decreased padding */}
+      <CardContent className="flex flex-col items-center justify-center p-4 text-center h-full">
         {/* If you had product images, you might adjust their size here too */}
         {/* {product.image && <img src={product.image} alt={product.name} className="w-16 h-16 object-cover mb-2" />} */}
-        <h3 className="text-sm font-semibold mb-1 truncate w-full"> {/* Decreased font size */}
+        <h3 className="text-md font-semibold mb-2 truncate w-full">
           {product.name}
         </h3>
         {/* Optionally add price here with smaller font */}
         {/* {product.price && <p className="text-xs text-gray-600">${product.price.toFixed(2)}</p>} */}
         <Button
           variant={isSelected ? 'default' : 'outline'}
-          size="sm" // Decreased button size
-          className="mt-1 w-full text-xs" // Decreased font size for button
+          size="default"
+          className="mt-2 w-full"
         >
           {isSelected ? 'Added' : 'Add'}
         </Button>

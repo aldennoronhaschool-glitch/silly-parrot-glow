@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; // Keep this import as it's used elsewhere
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -146,7 +146,7 @@ const Index: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <ScrollArea className="flex-grow pr-2">
-            <div className="grid grid-cols-2 gap-2"> {/* Adjusted gap for smaller cards */}
+            <div className="grid grid-cols-2 gap-4">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -216,13 +216,13 @@ const Index: React.FC = () => {
           )}
 
           <div className="mt-4 flex justify-end">
-            <Button
+            <button
               onClick={handleRecordSale}
-              className="px-6 py-3 text-lg" // Make it larger and more prominent
+              className="px-6 py-3 text-lg"
               disabled={cart.length === 0}
             >
               Record Sale
-            </Button>
+            </button>
           </div>
         </main>
       </div>
