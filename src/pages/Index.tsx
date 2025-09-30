@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SaleCart from '../components/SaleCart'; // Now importing as a default export
+import SaleCart from '../components/SaleCart';
 
 interface CartItem {
   id: string;
@@ -30,12 +30,16 @@ const IndexPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Welcome to Your App</h1>
-      <p className="mb-6">This is your main page. Below is the Sale Cart component.</p>
-      <SaleCart
-        cartItems={cartItems}
-        onRemoveItem={handleRemoveItem}
-        onUpdateQuantity={handleUpdateQuantity}
-      />
+      <p className="mb-6">This is your main page.</p>
+      <p className="mb-4 text-lg font-medium">Click the button below to open your shopping cart:</p> {/* Added explicit instruction */}
+      <div className="mb-8"> {/* Added margin to separate */}
+        <SaleCart
+          cartItems={cartItems}
+          onRemoveItem={handleRemoveItem}
+          onUpdateQuantity={handleUpdateQuantity}
+        />
+      </div>
+      <p className="text-gray-600">The cart will slide in from the side.</p>
     </div>
   );
 };
