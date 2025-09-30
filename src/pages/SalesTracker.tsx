@@ -24,7 +24,7 @@ export interface Sale {
 
 const predefinedItems: Item[] = [
   { id: '1', name: 'Cheese Balls', },
-  { id: '2', name: 'Croissant', price: 3.00 },
+  { id: '2', name: 'Chicken Nuggets',},
   { id: '3', name: 'Sandwich', price: 7.50 },
   { id: '4', name: 'Juice', price: 3.25 },
   { id: '5', name: 'Muffin', price: 2.75 },
