@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ProductCard from '../components/ProductCard';
 import SaleSummary from '../components/SaleSummary';
 import SaleControls from '../components/SaleControls';
+import SalesHistoryTable from '../components/SalesHistoryTable'; // Import the new component
 import { mockProducts } from '../data/products';
 import { exportSalesToCsv } from '../utils/csvExport';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,11 +49,11 @@ const IndexPage: React.FC = () => {
     if (!product) return;
 
     setCurrentSaleItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.productId === productId);
+      const existingItem = prevItems.find((item) => item.productId === product.id);
       if (existingItem) {
         // If item exists, increment quantity
         return prevItems.map((item) =>
-          item.productId === productId ? { ...item, quantity: (Number(item.quantity) || 0) + 1 } : item
+          item.productId === product.id ? { ...item, quantity: (Number(item.quantity) || 0) + 1 } : item
         );
       } else {
         // If item is new, add it with quantity 1
@@ -100,9 +101,9 @@ const IndexPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-800">Billing Counter (Quantity Tracker)</h1>
       </header>
 
-      <main className="flex-grow container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <main className="flex-grow container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* Product Selection Area */}
-        <section className="lg:col-span-2 bg-white p-4 rounded-lg shadow-md flex flex-col">
+        <section className="lg:col-span-2 xl:col-span-2 bg-white p-4 rounded-lg shadow-md flex flex-col">
           <h2 className="text-2xl font-semibold mb-4">Products</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto flex-grow pr-2">
             {products.map((product) => (
@@ -117,7 +118,7 @@ const IndexPage: React.FC = () => {
         </section>
 
         {/* Sale Summary and Controls Area */}
-        <section className="lg:col-span-1 bg-white p-4 rounded-lg shadow-md flex flex-col">
+        <section className="lg:col-span-1 xl:col-span-1 bg-white p-4 rounded-lg shadow-md flex flex-col">
           <SaleSummary
             currentSaleItems={currentSaleItems}
             onUpdateQuantity={handleUpdateQuantity}
@@ -130,6 +131,11 @@ const IndexPage: React.FC = () => {
             hasCurrentSaleItems={currentSaleItems.length > 0}
             hasSalesHistory={salesHistory.length > 0}
           />
+        </section>
+
+        {/* Past Sales History Area */}
+        <section className="lg:col-span-3 xl:col-span-1 bg-white p-4 rounded-lg shadow-md flex flex-col">
+          <SalesHistoryTable sales={salesHistory} />
         </section>
       </main>
     </div>
