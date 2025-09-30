@@ -26,7 +26,7 @@ const predefinedItems: Item[] = [
   { id: '1', name: 'Cheese Balls', },
   { id: '2', name: 'Chicken Nuggets',},
   { id: '3', name: 'Chicken Momos', },
-  { id: '4', name: 'Juice', price: 3.25 },
+  { id: '4', name: 'Meat Cutlet (2)',  },
   { id: '5', name: 'Muffin', price: 2.75 },
   { id: '6', name: 'Salad', price: 8.00 },
   { id: '7', name: 'Water Bottle', price: 1.50 },
