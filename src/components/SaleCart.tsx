@@ -1,70 +1,93 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
-export interface CartItem {
+// Define a type for your cart items if you don't have one already
+interface CartItem {
   id: string;
   name: string;
-  price: number;
+  price?: number; // Make price optional as it might be undefined
   quantity: number;
 }
 
 interface SaleCartProps {
-  cartItems: CartItem[];
-  onUpdateQuantity: (id: string, quantity: number) => void;
+  cartItems: CartItem[]; // Assuming cart items are passed as a prop
   onRemoveItem: (id: string) => void;
-  onCompleteSale: () => void;
+  onUpdateQuantity: (id: string, quantity: number) => void;
 }
 
-const SaleCart: React.FC<SaleCartProps> = ({
-  cartItems,
-  onUpdateQuantity,
-  onRemoveItem,
-  onCompleteSale,
-}) => {
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+export function SaleCart({ cartItems, onRemoveItem, onUpdateQuantity }: SaleCartProps) {
+  // Calculate subtotal, ensuring price is treated as 0 if undefined
+  const subtotal = cartItems.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0);
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Current Sale</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow overflow-y-auto">
-        {cartItems.length === 0 ? (
-          <p className="text-muted-foreground text-center">No items in cart</p>
-        ) : (
-          <div className="space-y-4">
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between gap-4 p-2 border rounded-md">
-                <span className="flex-grow">{item.name} (${item.price.toFixed(2)})</span>
-                <Input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value) || 1)}
-                  className="w-20 text-center"
-                />
-                <Button variant="destructive" size="icon" onClick={() => onRemoveItem(item.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline">Open Cart</Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Shopping Cart</SheetTitle>
+          <SheetDescription>
+            Review your selected items before checkout.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="grid gap-4 py-4">
+          {cartItems.length === 0 ? (
+            <p>Your cart is empty.</p>
+          ) : (
+            cartItems.map((item) => (
+              <div key={item.id} className="flex justify-between items-center">
+                <div>
+                  <h4 className="font-semibold">{item.name}</h4>
+                  <p className="text-sm text-gray-500">
+                    Quantity: 
+                    <Input 
+                      type="number" 
+                      value={item.quantity} 
+                      onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value))} 
+                      className="w-16 ml-2 inline-block"
+                      min="1"
+                    />
+                  </p>
+                </div>
+                <div className="text-right">
+                  {/*
+                    This is the line that was likely causing the error.
+                    We use the nullish coalescing operator (??) to default item.price to 0
+                    if it's undefined or null, ensuring toFixed() is called on a number.
+                  */}
+                  <p className="font-medium">${(item.price ?? 0).toFixed(2)}</p>
+                  <Button variant="link" size="sm" onClick={() => onRemoveItem(item.id)}>Remove</Button>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-      <div className="p-6 border-t">
-        <div className="flex justify-between items-center text-lg font-bold mb-4">
-          <span>Total:</span>
-          <span>${total.toFixed(2)}</span>
+            ))
+          )}
         </div>
-        <Button onClick={onCompleteSale} disabled={cartItems.length === 0} className="w-full">
-          Complete Sale
-        </Button>
-      </div>
-    </Card>
+        <Separator className="my-4" />
+        <div className="flex justify-between items-center text-lg font-bold">
+          <span>Subtotal:</span>
+          {/* Ensure subtotal is treated as 0 if somehow undefined (though reduce typically prevents this) */}
+          <span>${(subtotal ?? 0).toFixed(2)}</span>
+        </div>
+        <SheetFooter className="mt-6">
+          <SheetClose asChild>
+            <Button type="submit">Proceed to Checkout</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
-};
-
-export default SaleCart;
+}
