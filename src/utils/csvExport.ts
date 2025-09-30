@@ -12,30 +12,33 @@ interface SaleRecord {
   items: SaleItem[];
 }
 
-export const exportSalesToCsv = (sales: SaleRecord[], filename: string = 'sales_data.csv') => {
+export const exportSalesToCsv = (sales: SaleRecord[], filename: string = 'total_items_sold.csv') => {
   if (sales.length === 0) {
     console.warn("No sales data to export.");
     return;
   }
 
+  // Aggregate quantities for each product
+  const productQuantities = new Map<string, number>(); // Map<ProductName, TotalQuantity>
+
+  sales.forEach(sale => {
+    sale.items.forEach(item => {
+      const currentQuantity = productQuantities.get(item.name) || 0;
+      productQuantities.set(item.name, currentQuantity + item.quantity);
+    });
+  });
+
   // Define CSV headers
   const headers = [
-    "Sale ID",
-    "Timestamp",
-    "Items Sold", // Consolidated column for all items
+    "Product Name",
+    "Total Quantity Sold",
   ];
 
-  // Map sales data to CSV rows, consolidating items for each sale
-  const rows = sales.map(sale => {
-    // Format items into a single string: "Item Name (xQuantity), Another Item (xQuantity)"
-    const itemsSoldString = sale.items.map(item =>
-      `${item.name} (x${item.quantity})`
-    ).join('; '); // Using semicolon to avoid conflict with potential commas in item names/quantities
-
+  // Map aggregated data to CSV rows
+  const rows = Array.from(productQuantities.entries()).map(([productName, totalQuantity]) => {
     const row = [
-      `"${sale.id}"`, // Quote to handle commas in ID if any
-      `"${sale.timestamp}"`,
-      `"${itemsSoldString.replace(/"/g, '""')}"`, // Handle quotes within the items string
+      `"${productName.replace(/"/g, '""')}"`, // Handle quotes in product names
+      totalQuantity,
     ];
     return row.join(',');
   });
