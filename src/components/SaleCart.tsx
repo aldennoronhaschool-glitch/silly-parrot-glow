@@ -28,7 +28,7 @@ interface SaleCartProps {
   onUpdateQuantity: (id: string, quantity: number) => void;
 }
 
-export function SaleCart({ cartItems, onRemoveItem, onUpdateQuantity }: SaleCartProps) {
+export default function SaleCart({ cartItems, onRemoveItem, onUpdateQuantity }: SaleCartProps) {
   // Calculate subtotal, ensuring price is treated as 0 if undefined
   const subtotal = cartItems.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0);
 
@@ -53,22 +53,17 @@ export function SaleCart({ cartItems, onRemoveItem, onUpdateQuantity }: SaleCart
                 <div>
                   <h4 className="font-semibold">{item.name}</h4>
                   <p className="text-sm text-gray-500">
-                    Quantity: 
-                    <Input 
-                      type="number" 
-                      value={item.quantity} 
-                      onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value))} 
+                    Quantity:
+                    <Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value))}
                       className="w-16 ml-2 inline-block"
                       min="1"
                     />
                   </p>
                 </div>
                 <div className="text-right">
-                  {/*
-                    This is the line that was likely causing the error.
-                    We use the nullish coalescing operator (??) to default item.price to 0
-                    if it's undefined or null, ensuring toFixed() is called on a number.
-                  */}
                   <p className="font-medium">${(item.price ?? 0).toFixed(2)}</p>
                   <Button variant="link" size="sm" onClick={() => onRemoveItem(item.id)}>Remove</Button>
                 </div>
@@ -79,7 +74,6 @@ export function SaleCart({ cartItems, onRemoveItem, onUpdateQuantity }: SaleCart
         <Separator className="my-4" />
         <div className="flex justify-between items-center text-lg font-bold">
           <span>Subtotal:</span>
-          {/* Ensure subtotal is treated as 0 if somehow undefined (though reduce typically prevents this) */}
           <span>${(subtotal ?? 0).toFixed(2)}</span>
         </div>
         <SheetFooter className="mt-6">
