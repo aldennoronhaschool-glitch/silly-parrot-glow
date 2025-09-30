@@ -3,12 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { X } from 'lucide-react'; // Import an icon for removing items
+import { X } from 'lucide-react';
 
 interface SaleItem {
   productId: string;
   name: string;
-  price: number;
   quantity: number;
 }
 
@@ -23,11 +22,6 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
   onUpdateQuantity,
   onRemoveItem,
 }) => {
-  const subtotal = currentSaleItems.reduce(
-    (sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), // Added Number() and || 0 for robustness
-    0
-  );
-
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -44,7 +38,6 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
               <div key={item.productId} className="flex items-center justify-between py-2 border-b last:border-b-0">
                 <div className="flex-grow">
                   <h4 className="font-medium">{item.name}</h4>
-                  <p className="text-sm text-gray-600">${(Number(item.price) || 0).toFixed(2)} each</p> {/* Added Number() and || 0 */}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Input
@@ -56,9 +49,6 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
                     }
                     className="w-20 text-center"
                   />
-                  <span className="font-semibold text-lg w-20 text-right">
-                    ${((Number(item.quantity) || 0) * (Number(item.price) || 0)).toFixed(2)} {/* Added Number() and || 0 for robustness */}
-                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -74,8 +64,8 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
         )}
         <Separator className="my-4" />
         <div className="flex justify-between items-center text-xl font-bold mt-auto pt-2">
-          <span>Total:</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>Total Items:</span>
+          <span>{currentSaleItems.reduce((sum, item) => sum + item.quantity, 0)}</span>
         </div>
       </CardContent>
     </Card>

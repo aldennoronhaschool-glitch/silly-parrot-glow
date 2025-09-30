@@ -4,22 +4,17 @@ import SaleSummary from '../components/SaleSummary';
 import SaleControls from '../components/SaleControls';
 import { mockProducts } from '../data/products';
 import { exportSalesToCsv } from '../utils/csvExport';
-import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs for sales
-
-// Make sure to install uuid: npm install uuid @types/uuid
-// <dyad-add-dependency packages="uuid"></dyad-add-dependency>
+import { v4 as uuidv4 } from 'uuid';
 
 // Define types for better type safety
 interface Product {
   id: string;
   name: string;
-  price: number;
 }
 
 interface SaleItem {
   productId: string;
   name: string;
-  price: number;
   quantity: number;
 }
 
@@ -27,7 +22,6 @@ interface SaleRecord {
   id: string;
   timestamp: string;
   items: SaleItem[];
-  total: number;
 }
 
 const IndexPage: React.FC = () => {
@@ -58,11 +52,11 @@ const IndexPage: React.FC = () => {
       if (existingItem) {
         // If item exists, increment quantity
         return prevItems.map((item) =>
-          item.productId === productId ? { ...item, quantity: (Number(item.quantity) || 0) + 1 } : item // Safeguard here too
+          item.productId === productId ? { ...item, quantity: (Number(item.quantity) || 0) + 1 } : item
         );
       } else {
         // If item is new, add it with quantity 1
-        return [...prevItems, { productId: product.id, name: product.name, price: product.price, quantity: 1 }];
+        return [...prevItems, { productId: product.id, name: product.name, quantity: 1 }];
       }
     });
   }, [products]);
@@ -82,13 +76,10 @@ const IndexPage: React.FC = () => {
   const handleRecordSale = useCallback(() => {
     if (currentSaleItems.length === 0) return;
 
-    // Added Number() and || 0 for robustness in saleTotal calculation
-    const saleTotal = currentSaleItems.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), 0);
     const newSale: SaleRecord = {
       id: uuidv4(), // Generate a unique ID for the sale
       timestamp: new Date().toLocaleString(),
       items: currentSaleItems,
-      total: saleTotal,
     };
 
     setSalesHistory((prevHistory) => [...prevHistory, newSale]);
@@ -106,7 +97,7 @@ const IndexPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow p-4 text-center">
-        <h1 className="text-3xl font-bold text-gray-800">Billing Counter</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Billing Counter (Quantity Tracker)</h1>
       </header>
 
       <main className="flex-grow container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">

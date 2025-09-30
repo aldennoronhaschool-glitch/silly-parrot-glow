@@ -3,7 +3,6 @@ import { saveAs } from 'file-saver';
 interface SaleItem {
   productId: string;
   name: string;
-  price: number;
   quantity: number;
 }
 
@@ -11,7 +10,6 @@ interface SaleRecord {
   id: string;
   timestamp: string;
   items: SaleItem[];
-  total: number;
 }
 
 export const exportSalesToCsv = (sales: SaleRecord[], filename: string = 'sales_data.csv') => {
@@ -20,28 +18,22 @@ export const exportSalesToCsv = (sales: SaleRecord[], filename: string = 'sales_
     return;
   }
 
-  // Define CSV headers
+  // Define CSV headers without price or total columns
   const headers = [
     "Sale ID",
     "Timestamp",
     "Product Name",
     "Quantity",
-    "Unit Price",
-    "Item Total",
-    "Sale Total"
   ];
 
-  // Map sales data to CSV rows
+  // Map sales data to CSV rows, excluding price and total
   const rows = sales.flatMap(sale => {
-    return sale.items.map((item, index) => {
+    return sale.items.map((item) => {
       const row = [
         `"${sale.id}"`, // Quote to handle commas in ID if any
         `"${sale.timestamp}"`,
         `"${item.name.replace(/"/g, '""')}"`, // Handle quotes in product names
         item.quantity,
-        item.price.toFixed(2),
-        (item.quantity * item.price).toFixed(2),
-        index === 0 ? sale.total.toFixed(2) : '' // Only put sale total on the first item line
       ];
       return row.join(',');
     });
