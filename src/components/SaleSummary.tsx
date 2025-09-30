@@ -24,7 +24,7 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
   onRemoveItem,
 }) => {
   const subtotal = currentSaleItems.reduce(
-    (sum, item) => sum + item.quantity * item.price,
+    (sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), // Added Number() and || 0 for robustness
     0
   );
 
@@ -44,7 +44,7 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
               <div key={item.productId} className="flex items-center justify-between py-2 border-b last:border-b-0">
                 <div className="flex-grow">
                   <h4 className="font-medium">{item.name}</h4>
-                  <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
+                  <p className="text-sm text-gray-600">${(Number(item.price) || 0).toFixed(2)} each</p> {/* Added Number() and || 0 */}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Input
@@ -57,7 +57,7 @@ const SaleSummary: React.FC<SaleSummaryProps> = ({
                     className="w-20 text-center"
                   />
                   <span className="font-semibold text-lg w-20 text-right">
-                    ${(item.quantity * item.price).toFixed(2)}
+                    ${((Number(item.quantity) || 0) * (Number(item.price) || 0)).toFixed(2)} {/* Added Number() and || 0 for robustness */}
                   </span>
                   <Button
                     variant="ghost"

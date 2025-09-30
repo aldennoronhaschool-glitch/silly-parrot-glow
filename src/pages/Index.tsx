@@ -58,7 +58,7 @@ const IndexPage: React.FC = () => {
       if (existingItem) {
         // If item exists, increment quantity
         return prevItems.map((item) =>
-          item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item
+          item.productId === productId ? { ...item, quantity: (Number(item.quantity) || 0) + 1 } : item // Safeguard here too
         );
       } else {
         // If item is new, add it with quantity 1
@@ -82,7 +82,8 @@ const IndexPage: React.FC = () => {
   const handleRecordSale = useCallback(() => {
     if (currentSaleItems.length === 0) return;
 
-    const saleTotal = currentSaleItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    // Added Number() and || 0 for robustness in saleTotal calculation
+    const saleTotal = currentSaleItems.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), 0);
     const newSale: SaleRecord = {
       id: uuidv4(), // Generate a unique ID for the sale
       timestamp: new Date().toLocaleString(),
