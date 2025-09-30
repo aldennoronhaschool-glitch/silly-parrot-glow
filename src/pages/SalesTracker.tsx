@@ -29,8 +29,8 @@ const predefinedItems: Item[] = [
   { id: '4', name: 'Meat Cutlet (2)',  },
   { id: '5', name: 'Meat Masala',  },
   { id: '6', name: 'Chicken Tikka', },
-  { id: '7', name: '', price: 1.50 },
-  { id: '8', name: 'Pastry', price: 4.00 },
+  { id: '7', name: 'Chicken Kabab', price: 1.50 },
+  { id: '8', name: '', price: 4.00 },
 ];
 
 const SalesTracker: React.FC = () => {
