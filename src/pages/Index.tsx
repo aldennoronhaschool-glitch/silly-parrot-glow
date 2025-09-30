@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableRow, TableHeader } from "@/components/ui/table";
-import { DownloadCloud, Undo2 } from "lucide-react";
+import { DownloadCloud, Undo2, X } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 const items = [
@@ -18,11 +18,10 @@ const items = [
 
 const Index = () => {
   const [sales, setSales] = useState([]);
-  const [currentSale, setCurrentSale] = useState({ itemId: null, quantity: 1 });
+  const [currentSelection, setCurrentSelection] = useState([]); // Changed to an array for multiple items
   const salesHistory = useRef([]);
 
   useEffect(() => {
-    // Load sales from local storage if available
     const storedSales = localStorage.getItem('billingCounterSales');
     if (storedSales) {
       setSales(JSON.parse(storedSales));
@@ -30,41 +29,68 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    // Save sales to local storage whenever sales state changes
     localStorage.setItem('billingCounterSales', JSON.stringify(sales));
   }, [sales]);
 
   const handleItemClick = (itemId) => {
-    setCurrentSale({ itemId, quantity: 1 });
-  };
+    setCurrentSelection(prevSelection => {
+      const existingItemIndex = prevSelection.findIndex(item => item.id === itemId);
+      const itemToAdd = items.find(item => item.id === itemId);
 
-  const handleQuantityChange = (e) => {
-    const quantity = parseInt(e.target.value, 10);
-    if (!isNaN(quantity) && quantity > 0) {
-      setCurrentSale({ ...currentSale, quantity });
-    } else if (e.target.value === "") {
-      setCurrentSale({ ...currentSale, quantity: "" });
-    }
-  };
+      if (!itemToAdd) return prevSelection;
 
-  const addSale = () => {
-    if (currentSale.itemId !== null && currentSale.quantity !== "" && currentSale.quantity > 0) {
-      salesHistory.current.push([...sales]); // Save current state before making changes
-      const newItem = items.find(item => item.id === currentSale.itemId);
-      if (newItem) {
-        setSales(prevSales => [
-          ...prevSales,
-          {
-            id: Date.now(),
-            name: newItem.name,
-            price: newItem.price,
-            quantity: currentSale.quantity,
-            total: newItem.price * currentSale.quantity
-          }
-        ]);
+      if (existingItemIndex > -1) {
+        // If item already exists, increment quantity
+        const newSelection = [...prevSelection];
+        newSelection[existingItemIndex].quantity += 1;
+        return newSelection;
+      } else {
+        // If item is new, add it with quantity 1
+        return [...prevSelection, { ...itemToAdd, quantity: 1 }];
       }
-      setCurrentSale({ itemId: null, quantity: 1 });
+    });
+  };
+
+  const handleQuantityChange = (itemId, quantity) => {
+    const numQuantity = parseInt(quantity, 10);
+    if (!isNaN(numQuantity) && numQuantity > 0) {
+      setCurrentSelection(prevSelection =>
+        prevSelection.map(item =>
+          item.id === itemId ? { ...item, quantity: numQuantity } : item
+        )
+      );
+    } else if (quantity === "") {
+       setCurrentSelection(prevSelection =>
+        prevSelection.map(item =>
+          item.id === itemId ? { ...item, quantity: "" } : item
+        )
+      );
     }
+  };
+
+  const removeItemFromSelection = (itemId) => {
+    setCurrentSelection(prevSelection =>
+      prevSelection.filter(item => item.id !== itemId)
+    );
+  };
+
+  const addSelectionToSales = () => {
+    if (currentSelection.length === 0) return;
+
+    salesHistory.current.push([...sales]); // Save current state
+
+    const newSalesEntries = currentSelection
+      .filter(item => item.quantity !== "" && item.quantity > 0) // Ensure valid quantity
+      .map(selectedItem => ({
+        id: Date.now() + Math.random(), // Unique ID for each sale entry
+        name: selectedItem.name,
+        price: selectedItem.price,
+        quantity: selectedItem.quantity,
+        total: selectedItem.price * selectedItem.quantity,
+      }));
+
+    setSales(prevSales => [...prevSales, ...newSalesEntries]);
+    setCurrentSelection([]); // Clear the current selection
   };
 
   const undoLastSale = () => {
@@ -104,7 +130,7 @@ const Index = () => {
                   key={item.id}
                   variant="outline"
                   onClick={() => handleItemClick(item.id)}
-                  className={`w-full justify-center h-12 ${currentSale.itemId === item.id ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}`}
+                  className={`w-full justify-center h-12 ${currentSelection.some(sel => sel.id === item.id) ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}`}
                 >
                   {item.name}
                 </Button>
@@ -115,26 +141,31 @@ const Index = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Current Sale</CardTitle>
+            <CardTitle>Current Selection</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-4">
-            {currentSale.itemId && (
-              <>
-                <p className="text-lg font-semibold">
-                  {items.find(item => item.id === currentSale.itemId)?.name}
-                </p>
-                <Input
-                  type="number"
-                  min="1"
-                  value={currentSale.quantity === "" ? "" : currentSale.quantity}
-                  onChange={handleQuantityChange}
-                  placeholder="Quantity"
-                  className="text-center"
-                />
-                <Button onClick={addSale} className="w-full">Add to Sale</Button>
-              </>
+          <CardContent className="flex flex-col space-y-4">
+            {currentSelection.length === 0 && <p className="text-gray-500 text-center">Select items to add</p>}
+
+            {currentSelection.map((selectedItem) => (
+              <div key={selectedItem.id} className="flex items-center justify-between p-2 border rounded">
+                <div className="flex-grow mr-2">
+                  <p className="font-semibold text-sm">{selectedItem.name}</p>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={selectedItem.quantity === "" ? "" : selectedItem.quantity}
+                    onChange={(e) => handleQuantityChange(selectedItem.id, e.target.value)}
+                    className="text-center h-8 w-20"
+                  />
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => removeItemFromSelection(selectedItem.id)} className="text-red-500 hover:text-red-700">
+                  <X size={16} />
+                </Button>
+              </div>
+            ))}
+            {currentSelection.length > 0 && (
+               <Button onClick={addSelectionToSales} className="w-full mt-4">Add to Sale</Button>
             )}
-            {!currentSale.itemId && <p className="text-gray-500">Select an item</p>}
           </CardContent>
         </Card>
       </div>
