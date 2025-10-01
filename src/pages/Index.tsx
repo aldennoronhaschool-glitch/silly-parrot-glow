@@ -457,8 +457,7 @@ const Index: React.FC = () => {
                   </div>
                 </ScrollArea>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
         </div>
       </div>
     </div>
