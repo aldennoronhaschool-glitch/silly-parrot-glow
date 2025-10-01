@@ -200,35 +200,37 @@ const Index: React.FC = () => {
         {/* Mobile specific layout with Tabs */}
         <div className="md:hidden w-full h-full flex flex-col">
           <Tabs defaultValue="current-sale" className="flex-grow flex flex-col">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2"> {/* Only two tabs now */}
               <TabsTrigger value="current-sale">Current Sale</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
-            <TabsContent value="products" className="flex-grow flex flex-col p-4 overflow-y-auto">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2>
-              <ScrollArea className="flex-grow pr-2">
-                <div className="grid grid-cols-2 gap-3">
-                  {filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onSelect={handleProductSelect}
-                      isSelected={cart.some((item) => item.id === product.id)}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
             <TabsContent value="current-sale" className="flex-grow flex flex-col p-4 overflow-y-auto">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Products & Current Sale</h2>
+              {/* Products Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium mb-2">Select Products:</h3>
+                <ScrollArea className="h-48 pr-2 border rounded-lg bg-white p-2"> {/* Fixed height for product list */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {filteredProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onSelect={handleProductSelect}
+                        isSelected={cart.some((item) => item.id === product.id)}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Current Sale Section */}
               {cart.length === 0 ? (
-                <p className="text-gray-500 text-center py-8 border rounded-lg bg-white h-full flex items-center justify-center">
-                  No items in cart. Select products from the Products tab to start a sale.
+                <p className="text-gray-500 text-center py-8 border rounded-lg bg-white flex-grow flex items-center justify-center">
+                  No items in cart. Select products to start a sale.
                 </p>
               ) : (
                 <>
-                  <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm">
+                  <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm mb-4">
                     <Table>
                       <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
                         <TableRow>
@@ -278,7 +280,7 @@ const Index: React.FC = () => {
                       </TableBody>
                     </Table>
                   </div>
-                  <div className="mt-4 flex justify-between items-center">
+                  <div className="mt-auto flex justify-between items-center p-2 border-t bg-white rounded-lg shadow-sm">
                     <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
                     <Button
                       onClick={handleRecordSale}
@@ -444,18 +446,20 @@ const Index: React.FC = () => {
                       ))}
                     </ul>
                     <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-                        <p className="text-sm font-semibold text-gray-700">
-                            Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
-                        </p>
-                        <p className="text-md font-bold text-gray-800">
-                            Bill: ₹{sale.totalBillAmount.toFixed(2)}
-                        </p>
-                    </div>
+                            <p className="text-sm font-semibold text-gray-700">
+                                Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
+                            </p>
+                            <p className="text-md font-bold text-gray-800">
+                                Bill: ₹{sale.totalBillAmount.toFixed(2)}
+                            </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
+                </ScrollArea>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
