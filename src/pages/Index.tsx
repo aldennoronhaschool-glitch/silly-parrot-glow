@@ -457,9 +457,9 @@ const Index: React.FC = () => {
                   </div>
                 </ScrollArea>
               )}
-            </div> {/* Correctly closes the "hidden md:flex w-1/4 bg-white border-l border-gray-200 p-4 flex-col" div */}
-      </div> {/* Closing div for flex flex-grow overflow-hidden */}
-    </div> {/* Closing div for flex flex-col h-screen */}
+            </div>
+      </div>
+    </div>
   );
 };
 
