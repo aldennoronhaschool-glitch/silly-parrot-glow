@@ -457,9 +457,9 @@ const Index: React.FC = () => {
                   </div>
                 </ScrollArea>
               )}
-            </div>
-        </div>
-      </div>
+            </div> {/* Closing div for the desktop sales history section */}
+        </div> {/* Closing div for flex flex-grow overflow-hidden */}
+      </div> {/* Closing div for flex flex-col h-screen */}
     </div>
   );
 };
