@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // Still needed if you reintroduce it later, but not used for product search
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
@@ -19,6 +18,7 @@ import { toast } from 'react-hot-toast';
 interface Product {
   id: string;
   name: string;
+  price: number; // Added price to Product interface
 }
 
 interface CartItem extends Product {
@@ -29,28 +29,29 @@ interface SaleItem {
   productId: string;
   name: string;
   quantity: number;
+  price: number; // Added price to SaleItem interface for historical record
 }
 
 interface SaleRecord {
   id: string;
   timestamp: string;
   items: SaleItem[];
+  totalBillAmount: number; // Added totalBillAmount to SaleRecord
 }
 
 const DUMMY_PRODUCTS: Product[] = [
-  { id: '1', name: 'Cheese Balls' },
-  { id: '2', name: 'Chicken Nuggets' },
-  { id: '3', name: 'Chicken Momos' },
-  { id: '4', name: 'Meat Cutlet (2)' },
-  { id: '5', name: 'Meat Masala' },
-  { id: '6', name: 'Chicken Tikka' },
-  { id: '7', name: 'Chicken Kabab' },
-  { id: '8', name: 'French Fries' },
+  { id: '1', name: 'Cheese Balls', price: 120.00 },
+  { id: '2', name: 'Chicken Nuggets', price: 250.50 },
+  { id: '3', name: 'Chicken Momos', price: 180.00 },
+  { id: '4', name: 'Meat Cutlet (2)', price: 90.00 },
+  { id: '5', name: 'Meat Masala', price: 75.25 },
+  { id: '6', name: 'Chicken Tikka', price: 320.00 },
+  { id: '7', name: 'Chicken Kabab', price: 280.00 },
+  { id: '8', name: 'French Fries', price: 60.00 },
 ];
 
 const Index: React.FC = () => {
-  const [products] = useState<Product[]>(DUMMY_PRODUCTS); // Removed setProducts as products are static
-  // Removed searchTerm state and related functions
+  const [products] = useState<Product[]>(DUMMY_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [salesHistory, setSalesHistory] = useState<SaleRecord[]>(() => {
     if (typeof window !== 'undefined') {
@@ -67,16 +68,13 @@ const Index: React.FC = () => {
     }
   }, [salesHistory]);
 
-  // filteredProducts now always returns all products
-  const filteredProducts = products;
+  const filteredProducts = products; // All products are always displayed now
 
   const handleProductSelect = (productId: string) => {
     const existingCartItem = cart.find((item) => item.id === productId);
     if (existingCartItem) {
-      // If already in cart, remove it
       setCart(cart.filter((item) => item.id !== productId));
     } else {
-      // If not in cart, add it with quantity 1
       const productToAdd = products.find((product) => product.id === productId);
       if (productToAdd) {
         setCart([...cart, { ...productToAdd, quantity: 1 }]);
@@ -105,22 +103,31 @@ const Index: React.FC = () => {
       return;
     }
 
+    const newSaleItems: SaleItem[] = cart.map((item) => ({
+      productId: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price, // Store the price at the time of sale
+    }));
+
+    const totalBillAmount = newSaleItems.reduce(
+      (sum, item) => sum + item.quantity * item.price,
+      0
+    );
+
     const newSale: SaleRecord = {
       id: `SALE-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       timestamp: new Date().toLocaleString(),
-      items: cart.map((item) => ({
-        productId: item.id,
-        name: item.name,
-        quantity: item.quantity,
-      })),
+      items: newSaleItems,
+      totalBillAmount: totalBillAmount,
     };
 
     setSalesHistory((prevHistory) => {
-      const updatedHistory = [newSale, ...prevHistory]; // Add new sales to the beginning for easier viewing
-      setLastRecordedSaleId(newSale.id); // Store ID for undo
+      const updatedHistory = [newSale, ...prevHistory];
+      setLastRecordedSaleId(newSale.id);
       return updatedHistory;
     });
-    setCart([]); // Clear cart after recording sale
+    setCart([]);
     toast.success('Sale recorded successfully!');
   };
 
@@ -134,11 +141,13 @@ const Index: React.FC = () => {
       const filteredHistory = prevHistory.filter(
         (sale) => sale.id !== lastRecordedSaleId
       );
-      setLastRecordedSaleId(null); // Clear the last sale ID after undo
+      setLastRecordedSaleId(null);
       return filteredHistory;
     });
     toast.success('Last sale has been undone.');
   };
+
+  const currentSaleTotal = cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 font-sans">
@@ -170,8 +179,7 @@ const Index: React.FC = () => {
       <div className="flex flex-grow overflow-hidden">
         {/* Product Selection Column */}
         <aside className="w-1/4 bg-white border-r border-gray-200 p-4 flex flex-col">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2> {/* Added a title for clarity */}
-          {/* Removed search input */}
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2>
           <ScrollArea className="flex-grow pr-2">
             <div className="grid grid-cols-2 gap-3">
               {filteredProducts.map((product) => (
@@ -199,7 +207,8 @@ const Index: React.FC = () => {
                 <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
                   <TableRow>
                     <TableHead>Product</TableHead>
-                    <TableHead className="w-[150px] text-center">Quantity</TableHead>
+                    <TableHead className="w-[100px] text-center">Qty</TableHead>
+                    <TableHead className="w-[100px] text-right">Price</TableHead>
                     <TableHead className="w-[80px] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -227,6 +236,7 @@ const Index: React.FC = () => {
                           <PlusCircle className="h-4 w-4" />
                         </Button>
                       </TableCell>
+                      <TableCell className="text-right">₹{(item.price * item.quantity).toFixed(2)}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="destructive"
@@ -244,7 +254,8 @@ const Index: React.FC = () => {
             </div>
           )}
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-between items-center">
+            <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
             <Button
               onClick={handleRecordSale}
               className="px-8 py-3 text-lg font-semibold"
@@ -272,14 +283,18 @@ const Index: React.FC = () => {
                     <Separator className="mb-2" />
                     <ul className="list-disc pl-4 text-xs text-gray-600">
                       {sale.items.map((item, itemIndex) => (
-                        <li key={itemIndex}>
-                          {item.name} (x{item.quantity})
+                        <li key={itemIndex} className="flex justify-between">
+                          <span>{item.name} (x{item.quantity})</span>
+                          <span>₹{(item.quantity * item.price).toFixed(2)}</span>
                         </li>
                       ))}
                     </ul>
-                    <div className="flex justify-end mt-2 pt-1 border-t border-gray-100">
+                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                         <p className="text-sm font-semibold text-gray-700">
                             Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
+                        </p>
+                        <p className="text-md font-bold text-gray-800">
+                            Bill: ₹{sale.totalBillAmount.toFixed(2)}
                         </p>
                     </div>
                   </div>
