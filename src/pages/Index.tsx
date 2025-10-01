@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input'; // Still needed if you reintroduce it later, but not used for product search
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
@@ -11,9 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Separator } from '@/components/ui/separator'; // Added Separator for sales history display
+import { Separator } from '@/components/ui/separator';
 import { exportSalesToCsv } from '@/utils/csvExport';
-import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react'; // Removed ListChecks icon
+import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Product {
@@ -49,8 +49,8 @@ const DUMMY_PRODUCTS: Product[] = [
 ];
 
 const Index: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(DUMMY_PRODUCTS);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [products] = useState<Product[]>(DUMMY_PRODUCTS); // Removed setProducts as products are static
+  // Removed searchTerm state and related functions
   const [cart, setCart] = useState<CartItem[]>([]);
   const [salesHistory, setSalesHistory] = useState<SaleRecord[]>(() => {
     if (typeof window !== 'undefined') {
@@ -60,7 +60,6 @@ const Index: React.FC = () => {
     return [];
   });
   const [lastRecordedSaleId, setLastRecordedSaleId] = useState<string | null>(null);
-  // Removed isSalesHistoryModalOpen state as it's no longer a modal
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -68,9 +67,8 @@ const Index: React.FC = () => {
     }
   }, [salesHistory]);
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // filteredProducts now always returns all products
+  const filteredProducts = products;
 
   const handleProductSelect = (productId: string) => {
     const existingCartItem = cart.find((item) => item.id === productId);
@@ -148,7 +146,6 @@ const Index: React.FC = () => {
       <header className="bg-white shadow p-4 flex items-center justify-between z-10">
         <h1 className="text-2xl font-bold text-gray-800">Billing Counter</h1>
         <div className="flex space-x-2">
-          {/* Removed "View Sales History" button */}
           <Button
             onClick={handleUndoLastSale}
             variant="outline"
@@ -173,13 +170,8 @@ const Index: React.FC = () => {
       <div className="flex flex-grow overflow-hidden">
         {/* Product Selection Column */}
         <aside className="w-1/4 bg-white border-r border-gray-200 p-4 flex flex-col">
-          <Input
-            type="text"
-            placeholder="Search products..."
-            className="mb-4"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2> {/* Added a title for clarity */}
+          {/* Removed search input */}
           <ScrollArea className="flex-grow pr-2">
             <div className="grid grid-cols-2 gap-3">
               {filteredProducts.map((product) => (
@@ -195,7 +187,7 @@ const Index: React.FC = () => {
         </aside>
 
         {/* Main Sales Area (Current Sale) */}
-        <main className="flex-grow bg-gray-50 p-4 flex flex-col w-1/2"> {/* Adjusted width to w-1/2 */}
+        <main className="flex-grow bg-gray-50 p-4 flex flex-col w-1/2">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
           {cart.length === 0 ? (
             <p className="text-gray-500 text-center py-8 border rounded-lg bg-white h-full flex items-center justify-center">
@@ -274,8 +266,8 @@ const Index: React.FC = () => {
                 {salesHistory.map((sale) => (
                   <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
                     <div className="flex justify-between items-center mb-1">
-                      <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3> {/* Truncated ID */}
-                      <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p> {/* Only time for compact view */}
+                      <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3>
+                      <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
                     </div>
                     <Separator className="mb-2" />
                     <ul className="list-disc pl-4 text-xs text-gray-600">
