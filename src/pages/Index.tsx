@@ -46,7 +46,7 @@ const DUMMY_PRODUCTS: Product[] = [
   { id: '4', name: 'Meat Cutlet (2)', price: 90.00 },
   { id: '5', name: 'Meat Masala', price: 75.25 },
   { id: '6', name: 'Chicken Tikka', price: 320.00 },
-  { id: '7', name: 'Chicken Kabab', price: 280.00 },
+  { id: '7', 'name': 'Chicken Kabab', price: 280.00 },
   { id: '8', name: 'French Fries', price: 60.00 },
 ];
 
@@ -277,6 +277,7 @@ const Index: React.FC = () => {
             <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
             <Button
               onClick={handleRecordSale}
+              variant="default" // Changed to default variant
               className="px-8 py-3 text-lg font-semibold"
               disabled={cart.length === 0}
             >
