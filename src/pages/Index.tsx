@@ -18,7 +18,7 @@ import { toast } from 'react-hot-toast';
 interface Product {
   id: string;
   name: string;
-  price: number; // Added price to Product interface
+  price: number;
 }
 
 interface CartItem extends Product {
@@ -29,14 +29,14 @@ interface SaleItem {
   productId: string;
   name: string;
   quantity: number;
-  price: number; // Added price to SaleItem interface for historical record
+  price?: number; // Made price optional to handle old data from localStorage
 }
 
 interface SaleRecord {
   id: string;
   timestamp: string;
   items: SaleItem[];
-  totalBillAmount: number; // Added totalBillAmount to SaleRecord
+  totalBillAmount: number;
 }
 
 const DUMMY_PRODUCTS: Product[] = [
@@ -56,7 +56,26 @@ const Index: React.FC = () => {
   const [salesHistory, setSalesHistory] = useState<SaleRecord[]>(() => {
     if (typeof window !== 'undefined') {
       const savedSales = localStorage.getItem('salesHistory');
-      return savedSales ? JSON.parse(savedSales) : [];
+      if (savedSales) {
+        const parsedSales: SaleRecord[] = JSON.parse(savedSales);
+        // Ensure old records have a calculated totalBillAmount and default price if missing
+        return parsedSales.map(sale => {
+          const itemsWithSafePrices = sale.items.map(item => ({
+            ...item,
+            price: item.price ?? 0 // Default to 0 if price is undefined in old records
+          }));
+          const reCalculatedTotal = itemsWithSafePrices.reduce(
+            (sum, item) => sum + item.quantity * (item.price ?? 0),
+            0
+          );
+          return {
+            ...sale,
+            items: itemsWithSafePrices,
+            totalBillAmount: reCalculatedTotal // Recalculate to ensure correctness
+          };
+        });
+      }
+      return [];
     }
     return [];
   });
@@ -68,7 +87,7 @@ const Index: React.FC = () => {
     }
   }, [salesHistory]);
 
-  const filteredProducts = products; // All products are always displayed now
+  const filteredProducts = products;
 
   const handleProductSelect = (productId: string) => {
     const existingCartItem = cart.find((item) => item.id === productId);
@@ -77,7 +96,7 @@ const Index: React.FC = () => {
     } else {
       const productToAdd = products.find((product) => product.id === productId);
       if (productToAdd) {
-        setCart([...cart, { ...productToAdd, quantity: 1 }]);
+        setCart([...cart, { ...productToAdd, quantity: 1, price: productToAdd.price }]);
       }
     }
   };
@@ -107,11 +126,11 @@ const Index: React.FC = () => {
       productId: item.id,
       name: item.name,
       quantity: item.quantity,
-      price: item.price, // Store the price at the time of sale
+      price: item.price ?? 0, // Ensure price is always a number when recording
     }));
 
     const totalBillAmount = newSaleItems.reduce(
-      (sum, item) => sum + item.quantity * item.price,
+      (sum, item) => sum + item.quantity * (item.price ?? 0),
       0
     );
 
@@ -147,7 +166,7 @@ const Index: React.FC = () => {
     toast.success('Last sale has been undone.');
   };
 
-  const currentSaleTotal = cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const currentSaleTotal = cart.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 font-sans">
@@ -236,7 +255,7 @@ const Index: React.FC = () => {
                           <PlusCircle className="h-4 w-4" />
                         </Button>
                       </TableCell>
-                      <TableCell className="text-right">₹{(item.price * item.quantity).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">₹{((item.price ?? 0) * item.quantity).toFixed(2)}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="destructive"
@@ -285,7 +304,7 @@ const Index: React.FC = () => {
                       {sale.items.map((item, itemIndex) => (
                         <li key={itemIndex} className="flex justify-between">
                           <span>{item.name} (x{item.quantity})</span>
-                          <span>₹{(item.quantity * item.price).toFixed(2)}</span>
+                          <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span> {/* Safely access item.price */}
                         </li>
                       ))}
                     </ul>
