@@ -298,7 +298,6 @@ const Index: React.FC = () => {
               {salesHistory.length === 0 ? (
                 <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
               ) : (
-                {/* Sales History - Removed ScrollArea */}
                 <div className="space-y-4">
                   {salesHistory.map((sale) => (
                     <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
