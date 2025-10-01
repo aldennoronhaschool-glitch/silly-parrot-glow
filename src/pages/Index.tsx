@@ -84,7 +84,7 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-      // Set lastRecordedSaleId from the most recent sale in history if it exists
+      // Update lastRecordedSaleId whenever salesHistory changes
       if (salesHistory.length > 0) {
         setLastRecordedSaleId(salesHistory[0].id);
       } else {
@@ -181,7 +181,7 @@ const Index: React.FC = () => {
             disabled={salesHistory.length === 0} // Disable if no sales to undo
           >
             <History className="h-4 w-4" />
-            <span>Undo Last Sale</span> {/* Changed button text back */}
+            <span>Undo Last Sale</span>
           </Button>
           <Button
             onClick={() => exportSalesToCsv(salesHistory)}
