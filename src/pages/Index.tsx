@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { exportSalesToCsv } from '@/utils/csvExport';
 import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Product {
   id: string;
@@ -30,7 +30,7 @@ interface SaleItem {
   productId: string;
   name: string;
   quantity: number;
-  price?: number; // Made price optional to handle old data from localStorage
+  price?: number;
 }
 
 interface SaleRecord {
@@ -62,7 +62,7 @@ const Index: React.FC = () => {
         return parsedSales.map(sale => {
           const itemsWithSafePrices = sale.items.map(item => ({
             ...item,
-            price: item.price ?? 0 // Default to 0 if price is undefined in old records
+            price: item.price ?? 0
           }));
           const reCalculatedTotal = itemsWithSafePrices.reduce(
             (sum, item) => sum + item.quantity * (item.price ?? 0),
@@ -71,7 +71,7 @@ const Index: React.FC = () => {
           return {
             ...sale,
             items: itemsWithSafePrices,
-            totalBillAmount: reCalculatedTotal // Recalculate to ensure correctness
+            totalBillAmount: reCalculatedTotal
           };
         });
       }
@@ -84,7 +84,6 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-      // Update lastRecordedSaleId whenever salesHistory changes
       if (salesHistory.length > 0) {
         setLastRecordedSaleId(salesHistory[0].id);
       } else {
@@ -132,7 +131,7 @@ const Index: React.FC = () => {
       productId: item.id,
       name: item.name,
       quantity: item.quantity,
-      price: item.price ?? 0, // Ensure price is always a number when recording
+      price: item.price ?? 0,
     }));
 
     const totalBillAmount = newSaleItems.reduce(
@@ -172,7 +171,7 @@ const Index: React.FC = () => {
       {/* Header */}
       <header className="bg-white shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between z-10">
         <h1 className="text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Billing Counter</h1>
-        <div className="flex flex-wrap gap-2 justify-end"> {/* Use flex-wrap and gap for responsiveness */}
+        <div className="flex flex-wrap gap-2 justify-end">
           <Button
             onClick={handleUndoLastSale}
             variant="outline"
@@ -200,7 +199,7 @@ const Index: React.FC = () => {
         {/* Mobile specific layout with Tabs */}
         <div className="md:hidden w-full h-full flex flex-col">
           <Tabs defaultValue="current-sale" className="flex-grow flex flex-col">
-            <TabsList className="grid w-full grid-cols-2"> {/* Only two tabs now */}
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="current-sale">Current Sale</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
@@ -209,7 +208,7 @@ const Index: React.FC = () => {
               {/* Products Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium mb-2">Select Products:</h3>
-                <ScrollArea className="h-48 pr-2 border rounded-lg bg-white p-2"> {/* Fixed height for product list */}
+                <ScrollArea className="h-48 pr-2 border rounded-lg bg-white p-2">
                   <div className="grid grid-cols-2 gap-3">
                     {filteredProducts.map((product) => (
                       <ProductCard
