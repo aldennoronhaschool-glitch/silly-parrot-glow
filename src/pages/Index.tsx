@@ -11,9 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator'; // Added Separator for sales history display
 import { exportSalesToCsv } from '@/utils/csvExport';
-import SalesHistoryModal from '@/components/SalesHistoryModal'; // New import
-import { PlusCircle, MinusCircle, Trash2, Download, History, ListChecks } from 'lucide-react'; // Added ListChecks icon
+import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react'; // Removed ListChecks icon
 import { toast } from 'react-hot-toast';
 
 interface Product {
@@ -60,7 +60,7 @@ const Index: React.FC = () => {
     return [];
   });
   const [lastRecordedSaleId, setLastRecordedSaleId] = useState<string | null>(null);
-  const [isSalesHistoryModalOpen, setIsSalesHistoryModalOpen] = useState<boolean>(false); // New state for modal
+  // Removed isSalesHistoryModalOpen state as it's no longer a modal
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -118,7 +118,7 @@ const Index: React.FC = () => {
     };
 
     setSalesHistory((prevHistory) => {
-      const updatedHistory = [...prevHistory, newSale];
+      const updatedHistory = [newSale, ...prevHistory]; // Add new sales to the beginning for easier viewing
       setLastRecordedSaleId(newSale.id); // Store ID for undo
       return updatedHistory;
     });
@@ -148,14 +148,7 @@ const Index: React.FC = () => {
       <header className="bg-white shadow p-4 flex items-center justify-between z-10">
         <h1 className="text-2xl font-bold text-gray-800">Billing Counter</h1>
         <div className="flex space-x-2">
-          <Button
-            onClick={() => setIsSalesHistoryModalOpen(true)} // Button to open modal
-            variant="outline"
-            className="flex items-center space-x-2"
-          >
-            <ListChecks className="h-4 w-4" />
-            <span>View Sales History</span>
-          </Button>
+          {/* Removed "View Sales History" button */}
           <Button
             onClick={handleUndoLastSale}
             variant="outline"
@@ -178,8 +171,8 @@ const Index: React.FC = () => {
       </header>
 
       <div className="flex flex-grow overflow-hidden">
-        {/* Product Selection Sidebar */}
-        <aside className="w-1/3 bg-white border-r border-gray-200 p-4 flex flex-col">
+        {/* Product Selection Column */}
+        <aside className="w-1/4 bg-white border-r border-gray-200 p-4 flex flex-col">
           <Input
             type="text"
             placeholder="Search products..."
@@ -201,8 +194,8 @@ const Index: React.FC = () => {
           </ScrollArea>
         </aside>
 
-        {/* Main Sales Area */}
-        <main className="flex-grow p-4 flex flex-col bg-gray-50">
+        {/* Main Sales Area (Current Sale) */}
+        <main className="flex-grow bg-gray-50 p-4 flex flex-col w-1/2"> {/* Adjusted width to w-1/2 */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
           {cart.length === 0 ? (
             <p className="text-gray-500 text-center py-8 border rounded-lg bg-white h-full flex items-center justify-center">
@@ -269,14 +262,41 @@ const Index: React.FC = () => {
             </Button>
           </div>
         </main>
-      </div>
 
-      {/* Sales History Modal */}
-      <SalesHistoryModal
-        isOpen={isSalesHistoryModalOpen}
-        onClose={() => setIsSalesHistoryModalOpen(false)}
-        sales={salesHistory}
-      />
+        {/* Sales History Column */}
+        <div className="w-1/4 bg-white border-l border-gray-200 p-4 flex flex-col">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales History</h2>
+          {salesHistory.length === 0 ? (
+            <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
+          ) : (
+            <ScrollArea className="flex-grow pr-2">
+              <div className="space-y-4">
+                {salesHistory.map((sale) => (
+                  <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3> {/* Truncated ID */}
+                      <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p> {/* Only time for compact view */}
+                    </div>
+                    <Separator className="mb-2" />
+                    <ul className="list-disc pl-4 text-xs text-gray-600">
+                      {sale.items.map((item, itemIndex) => (
+                        <li key={itemIndex}>
+                          {item.name} (x{item.quantity})
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex justify-end mt-2 pt-1 border-t border-gray-100">
+                        <p className="text-sm font-semibold text-gray-700">
+                            Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
+                        </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
