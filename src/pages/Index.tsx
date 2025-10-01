@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { exportSalesToCsv } from '@/utils/csvExport';
 import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs components
 
 interface Product {
   id: string;
@@ -40,13 +41,13 @@ interface SaleRecord {
 }
 
 const DUMMY_PRODUCTS: Product[] = [
-  { id: '1', name: 'Cheese Balls', price: 30.00 },
-  { id: '2', name: 'Chicken Nuggets', price: 40.50 },
-  { id: '3', name: 'Chicken Momos', price: 50.00 },
+  { id: '1', name: 'Cheese Balls', price: 120.00 },
+  { id: '2', name: 'Chicken Nuggets', price: 250.50 },
+  { id: '3', name: 'Chicken Momos', price: 180.00 },
   { id: '4', name: 'Meat Cutlet (2)', price: 90.00 },
   { id: '5', name: 'Meat Masala', price: 75.25 },
-  { id: '6', name: 'Chicken Tikka', price: 35.00 },
-  { id: '7', 'name': 'Chicken Kabab', price: 40.00 },
+  { id: '6', name: 'Chicken Tikka', price: 320.00 },
+  { id: '7', 'name': 'Chicken Kabab', price: 280.00 },
   { id: '8', name: 'French Fries', price: 60.00 },
 ];
 
@@ -58,7 +59,6 @@ const Index: React.FC = () => {
       const savedSales = localStorage.getItem('salesHistory');
       if (savedSales) {
         const parsedSales: SaleRecord[] = JSON.parse(savedSales);
-        // Ensure old records have a calculated totalBillAmount and default price if missing
         return parsedSales.map(sale => {
           const itemsWithSafePrices = sale.items.map(item => ({
             ...item,
@@ -161,7 +161,6 @@ const Index: React.FC = () => {
       return;
     }
 
-    // Remove the first item from the salesHistory (which is the most recent)
     setSalesHistory((prevHistory) => prevHistory.slice(1));
     toast.success('Last sale has been undone.');
   };
@@ -171,33 +170,169 @@ const Index: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-100 font-sans">
       {/* Header */}
-      <header className="bg-white shadow p-4 flex items-center justify-between z-10">
-        <h1 className="text-2xl font-bold text-gray-800">Billing Counter</h1>
-        <div className="flex space-x-2">
+      <header className="bg-white shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between z-10">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Billing Counter</h1>
+        <div className="flex flex-wrap gap-2 justify-end"> {/* Use flex-wrap and gap for responsiveness */}
           <Button
             onClick={handleUndoLastSale}
             variant="outline"
-            className="flex items-center space-x-2"
-            disabled={salesHistory.length === 0} // Disable if no sales to undo
+            className="flex items-center space-x-1 sm:space-x-2"
+            disabled={salesHistory.length === 0}
           >
             <History className="h-4 w-4" />
-            <span>Undo Last Sale</span>
+            <span className="hidden sm:inline">Undo Last Sale</span>
+            <span className="sm:hidden">Undo</span>
           </Button>
           <Button
             onClick={() => exportSalesToCsv(salesHistory)}
             variant="outline"
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-1 sm:space-x-2"
             disabled={salesHistory.length === 0}
           >
             <Download className="h-4 w-4" />
-            <span>Export Sales CSV</span>
+            <span className="hidden sm:inline">Export Sales CSV</span>
+            <span className="sm:hidden">Export</span>
           </Button>
         </div>
       </header>
 
-      <div className="flex flex-grow overflow-hidden">
-        {/* Product Selection Column */}
-        <aside className="w-1/4 bg-white border-r border-gray-200 p-4 flex flex-col">
+      <div className="flex flex-grow overflow-hidden md:flex-row flex-col">
+        {/* Mobile specific layout with Tabs */}
+        <div className="md:hidden w-full h-full flex flex-col">
+          <Tabs defaultValue="current-sale" className="flex-grow flex flex-col">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="current-sale">Current Sale</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+            <TabsContent value="products" className="flex-grow flex flex-col p-4 overflow-y-auto">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2>
+              <ScrollArea className="flex-grow pr-2">
+                <div className="grid grid-cols-2 gap-3">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onSelect={handleProductSelect}
+                      isSelected={cart.some((item) => item.id === product.id)}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="current-sale" className="flex-grow flex flex-col p-4 overflow-y-auto">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
+              {cart.length === 0 ? (
+                <p className="text-gray-500 text-center py-8 border rounded-lg bg-white h-full flex items-center justify-center">
+                  No items in cart. Select products from the Products tab to start a sale.
+                </p>
+              ) : (
+                <>
+                  <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead className="w-[100px] text-center">Qty</TableHead>
+                          <TableHead className="w-[100px] text-right">Price</TableHead>
+                          <TableHead className="w-[80px] text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cart.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell className="text-center flex items-center justify-center space-x-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleQuantityChange(item.id, -1)}
+                                disabled={item.quantity <= 1}
+                              >
+                                <MinusCircle className="h-4 w-4" />
+                              </Button>
+                              <span className="mx-1 font-semibold text-base">{item.quantity}</span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleQuantityChange(item.id, 1)}
+                              >
+                                <PlusCircle className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                            <TableCell className="text-right">₹{((item.price ?? 0) * item.quantity).toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleRemoveItem(item.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="mt-4 flex justify-between items-center">
+                    <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
+                    <Button
+                      onClick={handleRecordSale}
+                      variant="default"
+                      className="px-8 py-3 text-lg font-semibold"
+                      disabled={cart.length === 0}
+                    >
+                      Record Sale
+                    </Button>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+            <TabsContent value="history" className="flex-grow flex flex-col p-4 overflow-y-auto">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales History</h2>
+              {salesHistory.length === 0 ? (
+                <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
+              ) : (
+                <ScrollArea className="flex-grow pr-2">
+                  <div className="space-y-4">
+                    {salesHistory.map((sale) => (
+                      <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                        <div className="flex justify-between items-center mb-1">
+                          <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3>
+                          <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <Separator className="mb-2" />
+                        <ul className="list-disc pl-4 text-xs text-gray-600">
+                          {sale.items.map((item, itemIndex) => (
+                            <li key={itemIndex} className="flex justify-between">
+                              <span>{item.name} (x{item.quantity})</span>
+                              <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                            <p className="text-sm font-semibold text-gray-700">
+                                Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
+                            </p>
+                            <p className="text-md font-bold text-gray-800">
+                                Bill: ₹{sale.totalBillAmount.toFixed(2)}
+                            </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Desktop specific layout - Hidden on mobile */}
+        <aside className="hidden md:flex w-1/4 bg-white border-r border-gray-200 p-4 flex-col">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2>
           <ScrollArea className="flex-grow pr-2">
             <div className="grid grid-cols-2 gap-3">
@@ -213,81 +348,80 @@ const Index: React.FC = () => {
           </ScrollArea>
         </aside>
 
-        {/* Main Sales Area (Current Sale) */}
-        <main className="flex-grow bg-gray-50 p-4 flex flex-col w-1/2">
+        <main className="hidden md:flex flex-grow bg-gray-50 p-4 flex-col w-1/2">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
           {cart.length === 0 ? (
             <p className="text-gray-500 text-center py-8 border rounded-lg bg-white h-full flex items-center justify-center">
               No items in cart. Select products from the left to start a sale.
             </p>
           ) : (
-            <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm">
-              <Table>
-                <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead className="w-[100px] text-center">Qty</TableHead>
-                    <TableHead className="w-[100px] text-right">Price</TableHead>
-                    <TableHead className="w-[80px] text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cart.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="text-center flex items-center justify-center space-x-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => handleQuantityChange(item.id, -1)}
-                          disabled={item.quantity <= 1}
-                        >
-                          <MinusCircle className="h-4 w-4" />
-                        </Button>
-                        <span className="mx-1 font-semibold text-base">{item.quantity}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => handleQuantityChange(item.id, 1)}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-right">₹{((item.price ?? 0) * item.quantity).toFixed(2)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => handleRemoveItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+            <>
+              <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead className="w-[100px] text-center">Qty</TableHead>
+                      <TableHead className="w-[100px] text-right">Price</TableHead>
+                      <TableHead className="w-[80px] text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {cart.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell className="text-center flex items-center justify-center space-x-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleQuantityChange(item.id, -1)}
+                            disabled={item.quantity <= 1}
+                          >
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                          <span className="mx-1 font-semibold text-base">{item.quantity}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleQuantityChange(item.id, 1)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">₹{((item.price ?? 0) * item.quantity).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleRemoveItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="mt-4 flex justify-between items-center">
+                <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
+                <Button
+                  onClick={handleRecordSale}
+                  variant="default"
+                  className="px-8 py-3 text-lg font-semibold"
+                  disabled={cart.length === 0}
+                >
+                  Record Sale
+                </Button>
+              </div>
+            </>
           )}
-
-          <div className="mt-4 flex justify-between items-center">
-            <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
-            <Button
-              onClick={handleRecordSale}
-              variant="default" // Changed to default variant
-              className="px-8 py-3 text-lg font-semibold"
-              disabled={cart.length === 0}
-            >
-              Record Sale
-            </Button>
-          </div>
         </main>
 
-        {/* Sales History Column */}
-        <div className="w-1/4 bg-white border-l border-gray-200 p-4 flex flex-col">
+        <div className="hidden md:flex w-1/4 bg-white border-l border-gray-200 p-4 flex-col">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales History</h2>
           {salesHistory.length === 0 ? (
             <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
