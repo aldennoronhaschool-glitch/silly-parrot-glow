@@ -12,7 +12,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { exportSalesToCsv } from '@/utils/csvExport';
-import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
+import SalesHistoryModal from '@/components/SalesHistoryModal'; // New import
+import { PlusCircle, MinusCircle, Trash2, Download, History, ListChecks } from 'lucide-react'; // Added ListChecks icon
 import { toast } from 'react-hot-toast';
 
 interface Product {
@@ -59,6 +60,7 @@ const Index: React.FC = () => {
     return [];
   });
   const [lastRecordedSaleId, setLastRecordedSaleId] = useState<string | null>(null);
+  const [isSalesHistoryModalOpen, setIsSalesHistoryModalOpen] = useState<boolean>(false); // New state for modal
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -146,6 +148,14 @@ const Index: React.FC = () => {
       <header className="bg-white shadow p-4 flex items-center justify-between z-10">
         <h1 className="text-2xl font-bold text-gray-800">Billing Counter</h1>
         <div className="flex space-x-2">
+          <Button
+            onClick={() => setIsSalesHistoryModalOpen(true)} // Button to open modal
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <ListChecks className="h-4 w-4" />
+            <span>View Sales History</span>
+          </Button>
           <Button
             onClick={handleUndoLastSale}
             variant="outline"
@@ -260,6 +270,13 @@ const Index: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Sales History Modal */}
+      <SalesHistoryModal
+        isOpen={isSalesHistoryModalOpen}
+        onClose={() => setIsSalesHistoryModalOpen(false)}
+        sales={salesHistory}
+      />
     </div>
   );
 };
