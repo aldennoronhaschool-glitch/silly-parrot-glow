@@ -1,13 +1,10 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { CheckCircle2 } from 'lucide-react';
 
 interface Product {
   id: string;
   name: string;
-  // You can add more product details here if needed, e.g., image, price
-  // image?: string;
-  // price?: number;
 }
 
 interface ProductCardProps {
@@ -19,26 +16,18 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isSelected }) => {
   return (
     <Card
-      className={`cursor-pointer transition-all duration-200 ease-in-out hover:shadow-lg ${
+      className={`relative cursor-pointer transition-all duration-200 ease-in-out hover:shadow-lg ${
         isSelected ? 'border-2 border-blue-500 bg-blue-50' : 'border border-gray-200'
       }`}
       onClick={() => onSelect(product.id)}
     >
       <CardContent className="flex flex-col items-center justify-center p-4 text-center h-full">
-        {/* If you had product images, you might adjust their size here too */}
-        {/* {product.image && <img src={product.image} alt={product.name} className="w-16 h-16 object-cover mb-2" />} */}
-        <h3 className="text-md font-semibold mb-2 truncate w-full">
+        <h3 className="text-md font-semibold truncate w-full">
           {product.name}
         </h3>
-        {/* Optionally add price here with smaller font */}
-        {/* {product.price && <p className="text-xs text-gray-600">${product.price.toFixed(2)}</p>} */}
-        <Button
-          variant={isSelected ? 'default' : 'outline'}
-          size="default"
-          className="mt-2 w-full"
-        >
-          {isSelected ? 'Added' : 'Add'}
-        </Button>
+        {isSelected && (
+          <CheckCircle2 className="absolute top-2 right-2 text-blue-600 h-5 w-5" />
+        )}
       </CardContent>
     </Card>
   );

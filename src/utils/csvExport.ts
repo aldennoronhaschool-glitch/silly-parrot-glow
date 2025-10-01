@@ -1,5 +1,3 @@
-import { saveAs } from 'file-saver';
-
 interface SaleItem {
   productId: string;
   name: string;
@@ -12,42 +10,30 @@ interface SaleRecord {
   items: SaleItem[];
 }
 
-export const exportSalesToCsv = (sales: SaleRecord[], filename: string = 'total_items_sold.csv') => {
-  if (sales.length === 0) {
-    console.warn("No sales data to export.");
+export const exportSalesToCsv = (salesHistory: SaleRecord[]) => {
+  if (salesHistory.length === 0) {
+    alert('No sales data to export!');
     return;
   }
 
-  // Aggregate quantities for each product
-  const productQuantities = new Map<string, number>(); // Map<ProductName, TotalQuantity>
+  const headers = ['Sale ID', 'Timestamp', 'Product Name', 'Quantity'];
+  let csvContent = headers.join(',') + '\n';
 
-  sales.forEach(sale => {
-    sale.items.forEach(item => {
-      const currentQuantity = productQuantities.get(item.name) || 0;
-      productQuantities.set(item.name, currentQuantity + item.quantity);
+  salesHistory.forEach((sale) => {
+    sale.items.forEach((item) => {
+      csvContent += `${sale.id},"${sale.timestamp}","${item.name}",${item.quantity}\n`;
     });
   });
 
-  // Define CSV headers
-  const headers = [
-    "Product Name",
-    "Total Quantity Sold",
-  ];
-
-  // Map aggregated data to CSV rows
-  const rows = Array.from(productQuantities.entries()).map(([productName, totalQuantity]) => {
-    const row = [
-      `"${productName.replace(/"/g, '""')}"`, // Handle quotes in product names
-      totalQuantity,
-    ];
-    return row.join(',');
-  });
-
-  const csvContent = [
-    headers.join(','),
-    ...rows
-  ].join('\n');
-
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  saveAs(blob, filename);
+  const link = document.createElement('a');
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `sales_data_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };

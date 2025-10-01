@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { Button } from '@/components/ui/button'; // Keep this import as it's used elsewhere
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { exportSalesToCsv } from '@/utils/csvExport';
-import { PlusCircle, MinusCircle, Trash2, Download } from 'lucide-react';
+import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Product {
@@ -49,6 +49,12 @@ const DUMMY_PRODUCTS: Product[] = [
   { id: '10', name: 'Salt' },
   { id: '11', name: 'Turmeric Powder' },
   { id: '12', name: 'Red Chilli Powder' },
+  { id: '13', name: 'Cumin Powder' },
+  { id: '14', name: 'Coriander Powder' },
+  { id: '15', name: 'Black Pepper' },
+  { id: '16', name: 'Cardamom' },
+  { id: '17', name: 'Cinnamon' },
+  { id: '18', name: 'Cloves' },
 ];
 
 const Index: React.FC = () => {
@@ -56,16 +62,15 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [salesHistory, setSalesHistory] = useState<SaleRecord[]>(() => {
-    // Load from localStorage on initial render
     if (typeof window !== 'undefined') {
       const savedSales = localStorage.getItem('salesHistory');
       return savedSales ? JSON.parse(savedSales) : [];
     }
     return [];
   });
+  const [lastRecordedSaleId, setLastRecordedSaleId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Save to localStorage whenever salesHistory changes
     if (typeof window !== 'undefined') {
       localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
     }
@@ -78,8 +83,10 @@ const Index: React.FC = () => {
   const handleProductSelect = (productId: string) => {
     const existingCartItem = cart.find((item) => item.id === productId);
     if (existingCartItem) {
+      // If already in cart, remove it
       setCart(cart.filter((item) => item.id !== productId));
     } else {
+      // If not in cart, add it with quantity 1
       const productToAdd = products.find((product) => product.id === productId);
       if (productToAdd) {
         setCart([...cart, { ...productToAdd, quantity: 1 }]);
@@ -95,7 +102,6 @@ const Index: React.FC = () => {
             ? { ...item, quantity: Math.max(1, item.quantity + delta) }
             : item
         )
-        .filter((item) => item.quantity > 0)
     );
   };
 
@@ -119,20 +125,56 @@ const Index: React.FC = () => {
       })),
     };
 
-    setSalesHistory((prevHistory) => [...prevHistory, newSale]);
+    setSalesHistory((prevHistory) => {
+      const updatedHistory = [...prevHistory, newSale];
+      setLastRecordedSaleId(newSale.id); // Store ID for undo
+      return updatedHistory;
+    });
     setCart([]); // Clear cart after recording sale
     toast.success('Sale recorded successfully!');
   };
 
+  const handleUndoLastSale = () => {
+    if (!lastRecordedSaleId) {
+      toast.error('No sale to undo.');
+      return;
+    }
+
+    setSalesHistory((prevHistory) => {
+      const filteredHistory = prevHistory.filter(
+        (sale) => sale.id !== lastRecordedSaleId
+      );
+      setLastRecordedSaleId(null); // Clear the last sale ID after undo
+      return filteredHistory;
+    });
+    toast.success('Last sale has been undone.');
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen bg-gray-100 font-sans">
       {/* Header */}
-      <header className="bg-white shadow p-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Sales Register</h1>
-        <Button onClick={() => exportSalesToCsv(salesHistory)} variant="outline" className="flex items-center space-x-2">
-          <Download className="h-4 w-4" />
-          <span>Export Sales CSV</span>
-        </Button>
+      <header className="bg-white shadow p-4 flex items-center justify-between z-10">
+        <h1 className="text-2xl font-bold text-gray-800">Billing Counter</h1>
+        <div className="flex space-x-2">
+          <Button
+            onClick={handleUndoLastSale}
+            variant="outline"
+            className="flex items-center space-x-2"
+            disabled={!lastRecordedSaleId}
+          >
+            <History className="h-4 w-4" />
+            <span>Undo Last Sale</span>
+          </Button>
+          <Button
+            onClick={() => exportSalesToCsv(salesHistory)}
+            variant="outline"
+            className="flex items-center space-x-2"
+            disabled={salesHistory.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            <span>Export Sales CSV</span>
+          </Button>
+        </div>
       </header>
 
       <div className="flex flex-grow overflow-hidden">
@@ -146,7 +188,7 @@ const Index: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <ScrollArea className="flex-grow pr-2">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -161,38 +203,40 @@ const Index: React.FC = () => {
 
         {/* Main Sales Area */}
         <main className="flex-grow p-4 flex flex-col bg-gray-50">
-          <h2 className="text-xl font-semibold mb-4">Current Sale</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
           {cart.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No items in cart. Select products from the left.</p>
+            <p className="text-gray-500 text-center py-8 border rounded-lg bg-white h-full flex items-center justify-center">
+              No items in cart. Select products from the left to start a sale.
+            </p>
           ) : (
-            <div className="flex-grow overflow-auto border rounded-lg bg-white">
+            <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm">
               <Table>
-                <TableHeader className="sticky top-0 bg-white">
+                <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
                   <TableRow>
-                    <TableHead className="w-[100px]">Product</TableHead>
-                    <TableHead className="text-center">Quantity</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead className="w-[150px] text-center">Quantity</TableHead>
+                    <TableHead className="w-[80px] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {cart.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="text-center flex items-center justify-center">
+                      <TableCell className="text-center flex items-center justify-center space-x-1">
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-7 w-7 rounded-full"
                           onClick={() => handleQuantityChange(item.id, -1)}
                           disabled={item.quantity <= 1}
                         >
                           <MinusCircle className="h-4 w-4" />
                         </Button>
-                        <span className="mx-2 font-semibold">{item.quantity}</span>
+                        <span className="mx-1 font-semibold text-base">{item.quantity}</span>
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-7 w-7 rounded-full"
                           onClick={() => handleQuantityChange(item.id, 1)}
                         >
                           <PlusCircle className="h-4 w-4" />
@@ -202,7 +246,7 @@ const Index: React.FC = () => {
                         <Button
                           variant="destructive"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-7 w-7 rounded-full"
                           onClick={() => handleRemoveItem(item.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -216,13 +260,13 @@ const Index: React.FC = () => {
           )}
 
           <div className="mt-4 flex justify-end">
-            <button
+            <Button
               onClick={handleRecordSale}
-              className="px-6 py-3 text-lg"
+              className="px-8 py-3 text-lg font-semibold"
               disabled={cart.length === 0}
             >
               Record Sale
-            </button>
+            </Button>
           </div>
         </main>
       </div>
