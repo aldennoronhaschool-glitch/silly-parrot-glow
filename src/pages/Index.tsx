@@ -15,7 +15,6 @@ import { exportSalesToCsv } from '@/utils/csvExport';
 import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 // Removed unused Tabs components imports
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Product {
   id: string;
@@ -225,7 +224,8 @@ const Index: React.FC = () => {
             </p>
           ) : (
             <>
-              <div className="flex-grow overflow-auto border rounded-lg bg-white shadow-sm mb-4">
+              {/* This div now has a controlled max-height to ensure the button remains visible */}
+              <div className="max-h-[30vh] overflow-y-auto border rounded-lg bg-white shadow-sm mb-4">
                 <Table>
                   <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
                     <TableRow>
@@ -275,7 +275,7 @@ const Index: React.FC = () => {
                   </TableBody>
                 </Table>
               </div>
-              <div className="mt-auto flex justify-between items-center p-2 border-t bg-white rounded-lg shadow-sm mb-6">
+              <div className="flex justify-between items-center p-2 border-t bg-white rounded-lg shadow-sm mb-6">
                 <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
                 <Button
                   onClick={handleRecordSale}
