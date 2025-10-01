@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { exportSalesToCsv } from '@/utils/csvExport';
 import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Re-imported Tabs components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Product {
   id: string;
@@ -195,30 +195,29 @@ const Index: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex flex-grow overflow-hidden md:flex-row flex-col">
-        {/* Mobile specific layout with Tabs */}
-        <div className="md:hidden w-full flex flex-col p-4"> {/* Removed h-full and overflow-y-auto here */}
+      {/* Changed flex-grow container: removed overflow-hidden */}
+      <div className="flex flex-grow md:flex-row flex-col">
+        {/* Mobile specific layout with Tabs - Added overflow-y-auto */}
+        <div className="md:hidden w-full flex flex-col p-4 overflow-y-auto">
           <Tabs defaultValue="current-sale" className="flex-grow flex flex-col">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="current-sale">Current Sale</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
-            <TabsContent value="current-sale" className="flex-grow flex flex-col pt-4"> {/* Added pt-4 for spacing */}
-              {/* Products Section */}
+            <TabsContent value="current-sale" className="flex-grow flex flex-col pt-4">
+              {/* Products Section - Removed ScrollArea */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium mb-2">Select Products:</h3>
-                <ScrollArea className="h-48 pr-2 border rounded-lg bg-white p-2">
-                  <div className="grid grid-cols-2 gap-3">
-                    {filteredProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onSelect={handleProductSelect}
-                        isSelected={cart.some((item) => item.id === product.id)}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
+                <div className="grid grid-cols-2 gap-3 p-2 border rounded-lg bg-white">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onSelect={handleProductSelect}
+                      isSelected={cart.some((item) => item.id === product.id)}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Current Sale Section */}
@@ -229,7 +228,8 @@ const Index: React.FC = () => {
                 </p>
               ) : (
                 <>
-                  <div className="max-h-[30vh] overflow-y-auto border rounded-lg bg-white shadow-sm mb-4">
+                  {/* Current Sale Table - Removed max-h and overflow-y-auto */}
+                  <div className="border rounded-lg bg-white shadow-sm mb-4">
                     <Table>
                       <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
                         <TableRow>
@@ -293,40 +293,39 @@ const Index: React.FC = () => {
                 </>
               )}
             </TabsContent>
-            <TabsContent value="history" className="flex-grow flex flex-col pt-4"> {/* Added pt-4 for spacing */}
+            <TabsContent value="history" className="flex-grow flex flex-col pt-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales History</h2>
               {salesHistory.length === 0 ? (
                 <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
               ) : (
-                <ScrollArea className="flex-grow pr-2 h-[calc(100vh-250px)]"> {/* Adjusted height to allow full page scroll while keeping content scrollable */}
-                  <div className="space-y-4">
-                    {salesHistory.map((sale) => (
-                      <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
-                        <div className="flex justify-between items-center mb-1">
-                          <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3>
-                          <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
-                        </div>
-                        <Separator className="mb-2" />
-                        <ul className="list-disc pl-4 text-xs text-gray-600">
-                          {sale.items.map((item, itemIndex) => (
-                            <li key={itemIndex} className="flex justify-between">
-                              <span>{item.name} (x{item.quantity})</span>
-                              <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-                          <p className="text-sm font-semibold text-gray-700">
-                            Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
-                          </p>
-                          <p className="text-md font-bold text-gray-800">
-                            Bill: ₹{sale.totalBillAmount.toFixed(2)}
-                          </p>
-                        </div>
+                {/* Sales History - Removed ScrollArea */}
+                <div className="space-y-4">
+                  {salesHistory.map((sale) => (
+                    <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                      <div className="flex justify-between items-center mb-1">
+                        <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3>
+                        <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+                      <Separator className="mb-2" />
+                      <ul className="list-disc pl-4 text-xs text-gray-600">
+                        {sale.items.map((item, itemIndex) => (
+                          <li key={itemIndex} className="flex justify-between">
+                            <span>{item.name} (x{item.quantity})</span>
+                            <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                        <p className="text-sm font-semibold text-gray-700">
+                          Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
+                        </p>
+                        <p className="text-md font-bold text-gray-800">
+                          Bill: ₹{sale.totalBillAmount.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </TabsContent>
           </Tabs>
