@@ -143,7 +143,7 @@ const Index: React.FC = () => {
 
     setSalesHistory((prevHistory) => {
       const updatedHistory = [newSale, ...prevHistory];
-      setLastRecordedSaleId(newSale.id);
+      setLastRecordedSaleId(newSale.id); // Still store last sale ID for potential future single undo or other uses
       return updatedHistory;
     });
     setCart([]);
@@ -151,19 +151,14 @@ const Index: React.FC = () => {
   };
 
   const handleUndoLastSale = () => {
-    if (!lastRecordedSaleId) {
-      toast.error('No sale to undo.');
+    if (salesHistory.length === 0) {
+      toast.error('No sales recorded to undo.');
       return;
     }
 
-    setSalesHistory((prevHistory) => {
-      const filteredHistory = prevHistory.filter(
-        (sale) => sale.id !== lastRecordedSaleId
-      );
-      setLastRecordedSaleId(null);
-      return filteredHistory;
-    });
-    toast.success('Last sale has been undone.');
+    setSalesHistory([]); // Clear all sales
+    setLastRecordedSaleId(null); // No last sale to refer to
+    toast.success('All sales history has been cleared.');
   };
 
   const currentSaleTotal = cart.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0);
@@ -178,10 +173,10 @@ const Index: React.FC = () => {
             onClick={handleUndoLastSale}
             variant="outline"
             className="flex items-center space-x-2"
-            disabled={!lastRecordedSaleId}
+            disabled={salesHistory.length === 0} // Disable if no sales to clear
           >
             <History className="h-4 w-4" />
-            <span>Undo Last Sale</span>
+            <span>Clear All Sales</span> {/* Changed button text */}
           </Button>
           <Button
             onClick={() => exportSalesToCsv(salesHistory)}
@@ -304,7 +299,7 @@ const Index: React.FC = () => {
                       {sale.items.map((item, itemIndex) => (
                         <li key={itemIndex} className="flex justify-between">
                           <span>{item.name} (x{item.quantity})</span>
-                          <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span> {/* Safely access item.price */}
+                          <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span>
                         </li>
                       ))}
                     </ul>
