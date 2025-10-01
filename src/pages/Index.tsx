@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { exportSalesToCsv } from '@/utils/csvExport';
 import { PlusCircle, MinusCircle, Trash2, Download, History } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-// Removed unused Tabs components imports
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Re-imported Tabs components
 
 interface Product {
   id: string;
@@ -196,136 +196,140 @@ const Index: React.FC = () => {
       </header>
 
       <div className="flex flex-grow overflow-hidden md:flex-row flex-col">
-        {/* Mobile specific layout - Products, Current Sale, and History on one page */}
-        <div className="md:hidden w-full h-full flex flex-col p-4 overflow-y-auto">
-          {/* Products Section */}
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Products</h2>
-          <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Select Products:</h3>
-            <ScrollArea className="h-48 pr-2 border rounded-lg bg-white p-2">
-              <div className="grid grid-cols-2 gap-3">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onSelect={handleProductSelect}
-                    isSelected={cart.some((item) => item.id === product.id)}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Current Sale Section */}
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
-          {cart.length === 0 ? (
-            <p className="text-gray-500 text-center py-8 border rounded-lg bg-white flex-grow flex items-center justify-center mb-6">
-              No items in cart. Select products to start a sale.
-            </p>
-          ) : (
-            <>
-              {/* This div now has a controlled max-height to ensure the button remains visible */}
-              <div className="max-h-[30vh] overflow-y-auto border rounded-lg bg-white shadow-sm mb-4">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
-                    <TableRow>
-                      <TableHead>Product</TableHead>
-                      <TableHead className="w-[100px] text-center">Qty</TableHead>
-                      <TableHead className="w-[100px] text-right">Price</TableHead>
-                      <TableHead className="w-[80px] text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cart.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
-                        <TableCell className="text-center flex items-center justify-center space-x-1">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleQuantityChange(item.id, -1)}
-                            disabled={item.quantity <= 1}
-                          >
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                          <span className="mx-1 font-semibold text-base">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleQuantityChange(item.id, 1)}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                        <TableCell className="text-right">₹{((item.price ?? 0) * item.quantity).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleRemoveItem(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+        {/* Mobile specific layout with Tabs */}
+        <div className="md:hidden w-full flex flex-col p-4"> {/* Removed h-full and overflow-y-auto here */}
+          <Tabs defaultValue="current-sale" className="flex-grow flex flex-col">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="current-sale">Current Sale</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+            <TabsContent value="current-sale" className="flex-grow flex flex-col pt-4"> {/* Added pt-4 for spacing */}
+              {/* Products Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium mb-2">Select Products:</h3>
+                <ScrollArea className="h-48 pr-2 border rounded-lg bg-white p-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    {filteredProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onSelect={handleProductSelect}
+                        isSelected={cart.some((item) => item.id === product.id)}
+                      />
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="flex justify-between items-center p-2 border-t bg-white rounded-lg shadow-sm mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
-                <Button
-                  onClick={handleRecordSale}
-                  variant="default"
-                  className="px-8 py-3 text-lg font-semibold"
-                  disabled={cart.length === 0}
-                >
-                  Record Sale
-                </Button>
-              </div>
-            </>
-          )}
-
-          <Separator className="my-6" />
-
-          {/* Sales History Section */}
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales History</h2>
-          {salesHistory.length === 0 ? (
-            <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
-          ) : (
-            <ScrollArea className="flex-grow pr-2 h-[300px]">
-              <div className="space-y-4">
-                {salesHistory.map((sale) => (
-                  <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
-                    <div className="flex justify-between items-center mb-1">
-                      <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3>
-                      <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
-                    </div>
-                    <Separator className="mb-2" />
-                    <ul className="list-disc pl-4 text-xs text-gray-600">
-                      {sale.items.map((item, itemIndex) => (
-                        <li key={itemIndex} className="flex justify-between">
-                          <span>{item.name} (x{item.quantity})</span>
-                          <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-sm font-semibold text-gray-700">
-                        Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
-                      </p>
-                      <p className="text-md font-bold text-gray-800">
-                        Bill: ₹{sale.totalBillAmount.toFixed(2)}
-                      </p>
-                    </div>
                   </div>
-                ))}
+                </ScrollArea>
               </div>
-            </ScrollArea>
-          )}
+
+              {/* Current Sale Section */}
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Sale</h2>
+              {cart.length === 0 ? (
+                <p className="text-gray-500 text-center py-8 border rounded-lg bg-white flex-grow flex items-center justify-center mb-6">
+                  No items in cart. Select products to start a sale.
+                </p>
+              ) : (
+                <>
+                  <div className="max-h-[30vh] overflow-y-auto border rounded-lg bg-white shadow-sm mb-4">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-white shadow-sm z-10">
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead className="w-[100px] text-center">Qty</TableHead>
+                          <TableHead className="w-[100px] text-right">Price</TableHead>
+                          <TableHead className="w-[80px] text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cart.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell className="text-center flex items-center justify-center space-x-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleQuantityChange(item.id, -1)}
+                                disabled={item.quantity <= 1}
+                              >
+                                <MinusCircle className="h-4 w-4" />
+                              </Button>
+                              <span className="mx-1 font-semibold text-base">{item.quantity}</span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleQuantityChange(item.id, 1)}
+                              >
+                                <PlusCircle className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                            <TableCell className="text-right">₹{((item.price ?? 0) * item.quantity).toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleRemoveItem(item.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="flex justify-between items-center p-2 border-t bg-white rounded-lg shadow-sm mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800">Total: ₹{currentSaleTotal.toFixed(2)}</h3>
+                    <Button
+                      onClick={handleRecordSale}
+                      variant="default"
+                      className="px-8 py-3 text-lg font-semibold"
+                      disabled={cart.length === 0}
+                    >
+                      Record Sale
+                    </Button>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+            <TabsContent value="history" className="flex-grow flex flex-col pt-4"> {/* Added pt-4 for spacing */}
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales History</h2>
+              {salesHistory.length === 0 ? (
+                <p className="text-center text-gray-500 py-8 text-lg flex-grow flex items-center justify-center">No sales recorded yet.</p>
+              ) : (
+                <ScrollArea className="flex-grow pr-2 h-[calc(100vh-250px)]"> {/* Adjusted height to allow full page scroll while keeping content scrollable */}
+                  <div className="space-y-4">
+                    {salesHistory.map((sale) => (
+                      <div key={sale.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                        <div className="flex justify-between items-center mb-1">
+                          <h3 className="font-semibold text-gray-700 text-sm">Sale ID: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{sale.id.substring(sale.id.length - 8)}</span></h3>
+                          <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <Separator className="mb-2" />
+                        <ul className="list-disc pl-4 text-xs text-gray-600">
+                          {sale.items.map((item, itemIndex) => (
+                            <li key={itemIndex} className="flex justify-between">
+                              <span>{item.name} (x{item.quantity})</span>
+                              <span>₹{((item.price ?? 0) * item.quantity).toFixed(2)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                          <p className="text-sm font-semibold text-gray-700">
+                            Total Items: {sale.items.reduce((sum, item) => sum + item.quantity, 0)}
+                          </p>
+                          <p className="text-md font-bold text-gray-800">
+                            Bill: ₹{sale.totalBillAmount.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Desktop specific layout - Hidden on mobile */}
