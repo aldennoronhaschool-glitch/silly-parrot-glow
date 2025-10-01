@@ -37,24 +37,14 @@ interface SaleRecord {
 }
 
 const DUMMY_PRODUCTS: Product[] = [
-  { id: '1', name: 'Meat Masala' },
-  { id: '2', name: 'Chicken Masala' },
-  { id: '3', name: 'Garam Masala' },
-  { id: '4', name: 'Paneer Masala' },
-  { id: '5', name: 'Fish Masala' },
-  { id: '6', name: 'Biryani Masala' },
-  { id: '7', name: 'Tea Powder' },
-  { id: '8', name: 'Coffee Beans' },
-  { id: '9', name: 'Sugar' },
-  { id: '10', name: 'Salt' },
-  { id: '11', name: 'Turmeric Powder' },
-  { id: '12', name: 'Red Chilli Powder' },
-  { id: '13', name: 'Cumin Powder' },
-  { id: '14', name: 'Coriander Powder' },
-  { id: '15', name: 'Black Pepper' },
-  { id: '16', name: 'Cardamom' },
-  { id: '17', name: 'Cinnamon' },
-  { id: '18', name: 'Cloves' },
+  { id: '1', name: 'Cheese Balls' },
+  { id: '2', name: 'Chicken Nuggets' },
+  { id: '3', name: 'Chicken Momos' },
+  { id: '4', name: 'Meat Cutlet (2)' },
+  { id: '5', name: 'Meat Masala' },
+  { id: '6', name: 'Chicken Tikka' },
+  { id: '7', name: 'Chicken Kabab' },
+  { id: '8', name: 'French Fries' },
 ];
 
 const Index: React.FC = () => {
