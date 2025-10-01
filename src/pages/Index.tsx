@@ -40,13 +40,13 @@ interface SaleRecord {
 }
 
 const DUMMY_PRODUCTS: Product[] = [
-  { id: '1', name: 'Cheese Balls', price: 120.00 },
-  { id: '2', name: 'Chicken Nuggets', price: 250.50 },
-  { id: '3', name: 'Chicken Momos', price: 180.00 },
+  { id: '1', name: 'Cheese Balls', price: 30.00 },
+  { id: '2', name: 'Chicken Nuggets', price: 40.50 },
+  { id: '3', name: 'Chicken Momos', price: 50.00 },
   { id: '4', name: 'Meat Cutlet (2)', price: 90.00 },
   { id: '5', name: 'Meat Masala', price: 75.25 },
-  { id: '6', name: 'Chicken Tikka', price: 320.00 },
-  { id: '7', 'name': 'Chicken Kabab', price: 280.00 },
+  { id: '6', name: 'Chicken Tikka', price: 35.00 },
+  { id: '7', 'name': 'Chicken Kabab', price: 40.00 },
   { id: '8', name: 'French Fries', price: 60.00 },
 ];
 
