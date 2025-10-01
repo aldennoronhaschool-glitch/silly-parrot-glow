@@ -84,6 +84,12 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+      // Set lastRecordedSaleId from the most recent sale in history if it exists
+      if (salesHistory.length > 0) {
+        setLastRecordedSaleId(salesHistory[0].id);
+      } else {
+        setLastRecordedSaleId(null);
+      }
     }
   }, [salesHistory]);
 
@@ -143,7 +149,6 @@ const Index: React.FC = () => {
 
     setSalesHistory((prevHistory) => {
       const updatedHistory = [newSale, ...prevHistory];
-      setLastRecordedSaleId(newSale.id); // Still store last sale ID for potential future single undo or other uses
       return updatedHistory;
     });
     setCart([]);
@@ -156,9 +161,9 @@ const Index: React.FC = () => {
       return;
     }
 
-    setSalesHistory([]); // Clear all sales
-    setLastRecordedSaleId(null); // No last sale to refer to
-    toast.success('All sales history has been cleared.');
+    // Remove the first item from the salesHistory (which is the most recent)
+    setSalesHistory((prevHistory) => prevHistory.slice(1));
+    toast.success('Last sale has been undone.');
   };
 
   const currentSaleTotal = cart.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0);
@@ -173,10 +178,10 @@ const Index: React.FC = () => {
             onClick={handleUndoLastSale}
             variant="outline"
             className="flex items-center space-x-2"
-            disabled={salesHistory.length === 0} // Disable if no sales to clear
+            disabled={salesHistory.length === 0} // Disable if no sales to undo
           >
             <History className="h-4 w-4" />
-            <span>Clear All Sales</span> {/* Changed button text */}
+            <span>Undo Last Sale</span> {/* Changed button text back */}
           </Button>
           <Button
             onClick={() => exportSalesToCsv(salesHistory)}
